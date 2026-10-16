@@ -1,0 +1,44 @@
+<%= form_with model: ticket, class: "form" do |form| %>
+  <% if ticket.errors.any? %>
+    <div class="errors">
+      <h2><%= pluralize(ticket.errors.count, "error") %> prevented this ticket from being saved:</h2>
+      <ul>
+        <% ticket.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :subject %>
+    <%= form.text_field :subject, required: true, maxlength: 200 %>
+  </div>
+
+  <div class="field">
+    <%= form.label :description %>
+    <%= form.text_area :description, required: true, rows: 6 %>
+  </div>
+
+  <div class="field">
+    <%= form.label :requester_name %>
+    <%= form.text_field :requester_name, required: true, maxlength: 100 %>
+  </div>
+
+  <div class="field">
+    <%= form.label :requester_email %>
+    <%= form.email_field :requester_email, required: true %>
+  </div>
+
+  <div class="field">
+    <%= form.label :priority %>
+    <%= form.select :priority, Ticket.priorities.keys.map { |p| [ p.humanize, p ] } %>
+  </div>
+
+  <div class="field">
+    <%= form.label :assigned_to_id, "Assigned to" %>
+    <%= form.collection_select :assigned_to_id, users, :id, :name, include_blank: "Unassigned" %>
+  </div>
+
+  <%= form.submit class: "button" %>
+<% end %>

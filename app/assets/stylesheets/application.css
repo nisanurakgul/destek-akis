@@ -8,3 +8,80 @@
  *
  * Consider organizing styles into separate files for maintainability.
  */
+
+/* DestekAkış — simple shared styles */
+:root {
+  --brand: #0f766e;
+  --brand-dark: #115e59;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f8fafc;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.5;
+}
+
+main { max-width: 960px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+a { color: var(--brand); }
+
+.site-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem;
+  padding: 0.75rem 1rem; background: #fff; border-bottom: 3px solid var(--brand);
+}
+.site-header nav { display: flex; gap: 1rem; flex: 1; }
+.site-header nav a { text-decoration: none; font-weight: 600; }
+.brand { font-size: 1.25rem; font-weight: 800; color: var(--text); text-decoration: none; }
+.brand span { color: var(--brand); }
+.current-user { display: flex; align-items: center; gap: 0.5rem; color: var(--muted); }
+.current-user form { margin: 0; }
+
+.flash { max-width: 960px; margin: 1rem auto 0; padding: 0.75rem 1rem; border-radius: 6px; }
+.flash.notice { background: #ecfdf5; color: #065f46; }
+.flash.alert { background: #fef2f2; color: #991b1b; }
+
+.page-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+
+.button, .link-button, input[type="submit"] {
+  display: inline-block; padding: 0.45rem 0.9rem; border: 1px solid var(--brand); border-radius: 6px;
+  background: var(--brand); color: #fff; font: inherit; text-decoration: none; cursor: pointer;
+}
+.button:hover, input[type="submit"]:hover { background: var(--brand-dark); }
+.button.secondary, .link-button { background: #fff; color: var(--brand); }
+
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #fff; }
+th, td { padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); text-align: left; }
+th { font-size: 0.85rem; color: var(--muted); }
+
+.badge { display: inline-block; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.8rem; font-weight: 600; }
+.status-open { background: #dbeafe; color: #1e40af; }
+.status-pending { background: #fef3c7; color: #92400e; }
+.status-solved { background: #dcfce7; color: #166534; }
+.status-closed { background: #e5e7eb; color: #374151; }
+.priority-low { background: #f3f4f6; color: #4b5563; }
+.priority-normal { background: #e0f2fe; color: #075985; }
+.priority-high { background: #ffedd5; color: #9a3412; }
+.priority-urgent { background: #fee2e2; color: #991b1b; }
+
+.details { display: grid; grid-template-columns: max-content 1fr; gap: 0.4rem 1rem; }
+.details dt { color: var(--muted); }
+.details dd { margin: 0; }
+.description { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 0.25rem 1rem; }
+.status-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.status-actions form { margin: 0; }
+.empty { color: var(--muted); }
+
+.form .field { margin-bottom: 1rem; }
+.form label { display: block; font-weight: 600; margin-bottom: 0.25rem; }
+.form input[type="text"], .form input[type="email"], .form textarea, .form select {
+  width: 100%; max-width: 32rem; box-sizing: border-box; padding: 0.45rem; font: inherit;
+  border: 1px solid var(--border); border-radius: 6px;
+}
+.errors { background: #fef2f2; color: #991b1b; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
+.errors h2 { font-size: 1rem; }

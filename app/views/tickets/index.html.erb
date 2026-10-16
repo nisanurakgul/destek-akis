@@ -1,0 +1,39 @@
+<% content_for :title, "Tickets · DestekAkış" %>
+
+<div class="page-header">
+  <h1>Tickets</h1>
+  <%= link_to "New ticket", new_ticket_path, class: "button" %>
+</div>
+
+<% if @tickets.any? %>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Subject</th>
+          <th>Requester</th>
+          <th>Status</th>
+          <th>Priority</th>
+          <th>Assigned to</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @tickets.each do |ticket| %>
+          <tr id="<%= dom_id(ticket) %>">
+            <td><%= ticket.id %></td>
+            <td><%= link_to ticket.subject, ticket %></td>
+            <td><%= ticket.requester_name %></td>
+            <td><%= status_badge(ticket) %></td>
+            <td><%= priority_badge(ticket) %></td>
+            <td><%= assignee_name(ticket) %></td>
+            <td><%= l ticket.created_at, format: :short %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <p class="empty">No tickets yet.</p>
+<% end %>

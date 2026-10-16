@@ -74,6 +74,14 @@ class TicketTest < ActiveSupport::TestCase
     assert_includes users(:agent).assigned_tickets, ticket
   end
 
+  test "assignee must be an existing user" do
+    ticket = build_ticket(assigned_to_id: 999_999)
+    assert_not ticket.valid?
+    assert_includes ticket.errors[:assigned_to], "must be an existing user"
+
+    assert build_ticket(assigned_to_id: nil).valid?, "unassigned is still allowed"
+  end
+
   test "deleting a user leaves their tickets unassigned" do
     ticket = tickets(:open_ticket)
     users(:agent).destroy

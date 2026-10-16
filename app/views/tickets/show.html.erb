@@ -1,0 +1,44 @@
+<% content_for :title, "Ticket ##{@ticket.id} · DestekAkış" %>
+
+<div class="page-header">
+  <h1>#<%= @ticket.id %> <%= @ticket.subject %></h1>
+  <%= link_to "Edit", edit_ticket_path(@ticket), class: "button secondary" %>
+</div>
+
+<dl class="details">
+  <dt>Status</dt>
+  <dd><%= status_badge(@ticket) %></dd>
+
+  <dt>Priority</dt>
+  <dd><%= priority_badge(@ticket) %></dd>
+
+  <dt>Assigned to</dt>
+  <dd><%= assignee_name(@ticket) %></dd>
+
+  <dt>Requester</dt>
+  <dd><%= @ticket.requester_name %> &lt;<%= @ticket.requester_email %>&gt;</dd>
+
+  <dt>Created</dt>
+  <dd><%= l @ticket.created_at, format: :long %></dd>
+
+  <dt>Last updated</dt>
+  <dd><%= l @ticket.updated_at, format: :long %></dd>
+</dl>
+
+<h2>Description</h2>
+<div class="description"><%= simple_format @ticket.description %></div>
+
+<h2>Change status</h2>
+<% next_statuses = Ticket::TRANSITIONS.fetch(@ticket.status) %>
+<% if next_statuses.any? %>
+  <div class="status-actions">
+    <% next_statuses.each do |status| %>
+      <%= button_to "Mark as #{status}", ticket_status_path(@ticket),
+            method: :patch, params: { status: status }, class: "button secondary" %>
+    <% end %>
+  </div>
+<% else %>
+  <p class="empty">This ticket is closed. Closed tickets cannot change status.</p>
+<% end %>
+
+<p><%= link_to "Back to tickets", tickets_path %></p>

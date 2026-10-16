@@ -1,0 +1,7 @@
+<% content_for :title, "Edit ticket ##{@ticket.id} · DestekAkış" %>
+
+<h1>Edit ticket #<%= @ticket.id %></h1>
+
+<%= render "form", ticket: @ticket, users: @users %>
+
+<p><%= link_to "Back to ticket", @ticket %></p>

@@ -2,6 +2,8 @@
 
 <p>You are signed in as <strong><%= Current.user.role %></strong>.</p>
 
+<p><%= link_to "View tickets", tickets_path, class: "button" %></p>
+
 <% if Current.user.admin? %>
   <p><%= link_to "Manage users", users_path %></p>
 <% end %>

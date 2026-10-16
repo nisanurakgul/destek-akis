@@ -26,6 +26,9 @@ class Ticket < ApplicationRecord
   validates :description, presence: true
   validates :requester_name, presence: true, length: { maximum: 100 }
   validates :requester_email, presence: true, format: { with: URI::MailTo::EMAIL_REGEXP }
+  # belongs_to optional: true does not check that the user exists; without this
+  # a bad assigned_to_id would only fail at the database foreign key.
+  validates :assigned_to, presence: { message: "must be an existing user" }, if: :assigned_to_id?
   validate :new_tickets_start_open, on: :create
   validate :status_change_is_allowed, on: :update
 

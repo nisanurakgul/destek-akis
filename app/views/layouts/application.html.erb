@@ -24,11 +24,17 @@
   </head>
 
   <body>
-    <header>
-      <strong>DestekAkış</strong>
+    <header class="site-header">
+      <%= link_to root_path, class: "brand" do %>Destek<span>Akış</span><% end %>
       <% if authenticated? %>
-        <span><%= Current.user.name %> (<%= Current.user.role %>)</span>
-        <%= button_to "Sign out", session_path, method: :delete %>
+        <nav>
+          <%= link_to "Tickets", tickets_path %>
+          <%= link_to "Users", users_path if Current.user.admin? %>
+        </nav>
+        <div class="current-user">
+          <span><%= Current.user.name %> (<%= Current.user.role %>)</span>
+          <%= button_to "Sign out", session_path, method: :delete, class: "link-button" %>
+        </div>
       <% end %>
     </header>
 
