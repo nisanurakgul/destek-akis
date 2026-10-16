@@ -26,7 +26,8 @@ jobs:
       # precompiled x86_64-linux-gnu gem that bundles the SQLite library itself.
       # This step fails early, with a clear message, if that ever stops being true.
       - name: Check SQLite
-        run: bundle exec ruby -rsqlite3 -e 'puts "SQLite #{SQLite3::SQLITE_VERSION}"'
+        run: |
+          bundle exec ruby -rsqlite3 -e 'puts "SQLite #{SQLite3::SQLITE_VERSION}"'
 
       - name: Run tests
         env:
