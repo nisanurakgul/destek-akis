@@ -17,6 +17,9 @@ bin/docker-entrypoint ./bin/thrust ./bin/rails server
    them if they already exist. A brand-new database is also seeded:
    `db/seeds.rb` creates the first admin from `ADMIN_NAME`, `ADMIN_EMAIL` and
    `ADMIN_PASSWORD`.
+   Only if `DEMO_SEED_ON_BOOT=1` is set, it then runs
+   `DEMO_SEED_IN_PRODUCTION=1 bin/rails demo:seed` to add the example tickets
+   (see [Demo data](#demo-data-optional) below).
 2. Thruster listens on `HTTP_PORT` (10000, the port Render sends traffic to)
    and starts Puma on port 3000 behind it.
 3. Because `SOLID_QUEUE_IN_PUMA=true`, Puma also starts the Solid Queue
@@ -35,6 +38,7 @@ auto-close never runs.
 | `SOLID_QUEUE_IN_PUMA` | `true` | Runs background and recurring jobs |
 | `PORT`, `HTTP_PORT` | `10000` | Port Render routes to; Thruster listens on it |
 | `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | entered once in the dashboard | First admin account |
+| `DEMO_SEED_ON_BOOT` | `1` (optional, not in `render.yaml`) | Adds the 18 demo tickets on every boot; leave unset to turn off |
 
 Health check path: `/up`.
 
@@ -61,6 +65,31 @@ either a persistent disk (paid instance, mount it at `/rails/storage` using the
 commented `disk:` block in `render.yaml`) or a hosted database. Both need a
 decision about cost first.
 
+## Demo data (optional)
+
+On the free plan the database starts empty on every boot, so the demo tickets
+from `bin/rails demo:seed` disappear whenever the service restarts or wakes up.
+To add them again on every boot, set `DEMO_SEED_ON_BOOT=1` on the service in
+the Render dashboard and deploy. It is not part of `render.yaml`, so it is off
+unless someone sets it.
+
+- It runs after `db:prepare` (so after the first admin is created) and before
+  the server starts.
+- Only the exact value `1` turns it on. Without it, boot is unchanged.
+- `demo:seed` only adds demo tickets that are missing (same subject and
+  requester email). It never changes or deletes existing users, tickets or
+  history, and it creates no users.
+- The demo history is written in the name of existing users. On the free plan
+  that is only the admin from the environment variables.
+- If the seed fails (for example because `ADMIN_EMAIL`/`ADMIN_PASSWORD` are
+  missing and there is no user), the error is logged and the server starts
+  without demo data. A failing `db:prepare` still stops the boot, as before.
+- To turn it off, remove the variable and deploy again.
+
+Do not set it on a service with a persistent disk that holds real data: the
+demo tickets would be mixed into the real list and counts, and their history
+would show real users doing things they did not do.
+
 ## Checked locally before deploying
 
 The container command was run locally in production mode with the variables
@@ -71,3 +100,7 @@ above (Docker was not available, so the image itself was not built):
 - Solid Queue started a supervisor, dispatcher, worker and scheduler; the
   scheduler loaded `auto_close_solved_tickets` (every hour).
 - An enqueued `AutoCloseSolvedTicketsJob` was performed by the worker.
+- `DEMO_SEED_ON_BOOT` (16 October 2026, same way, without Docker): unset gave
+  an empty ticket list; `1` on a new database created 18 tickets with 55
+  history events; a second boot on the same database created nothing. `/up`
+  returned 200 each time. Not yet tried on Render.

@@ -109,6 +109,22 @@ denemek için:
 bin/rails runner "AutoCloseSolvedTicketsJob.perform_now"
 ```
 
+### Örnek (demo) talepler
+
+Liste, durumlar ve geçmiş boş görünmesin diye 18 örnek talep eklenebilir:
+
+```bash
+bin/rails demo:seed
+```
+
+Görev (`lib/tasks/demo.rake`) yalnızca ekleme yapar: aynı konu ve e-postaya
+sahip bir talep zaten varsa onu atlar; mevcut kullanıcıları, talepleri ve
+geçmişi değiştirmez veya silmez, yeni kullanıcı oluşturmaz. Talepleri var olan
+kullanıcılara atar ve geçmişi normal model callback'leriyle, geçmiş tarihlerle
+yazar. En az bir kullanıcı gerekir. Production'da yalnızca
+`DEMO_SEED_IN_PRODUCTION=1` ile çalışır. Render'da açılışta otomatik
+çalıştırma için bkz. [Render dağıtımı](#render-dağıtımı).
+
 ## Testler ve kontroller
 
 ```bash
@@ -124,16 +140,17 @@ request'te testleri, RuboCop'u ve güvenlik taramalarını çalıştırır. Ruby
 ([ruby/setup-ruby](https://github.com/ruby/setup-ruby)). Güncel durum yukarıdaki
 CI rozetinde görünür.
 
-Son yerel çalıştırma (16 Ekim 2026, arayüz yenilemesinden sonra):
-`bin/rails test` 158 test ve 803 doğrulama için 0 başarısızlık, 0 hata ve 0
-atlama bildirdi; `bin/rubocop` uyarı bulmadı; `bin/brakeman` 0 güvenlik
-uyarısı bildirdi. Bu sonuçlar henüz CI'da doğrulanmadı.
+Son yerel çalıştırma (16 Ekim 2026, demo verisi ve açılışta demo seçeneği
+eklendikten sonra): `bin/rails test` 172 test ve 933 doğrulama için 0
+başarısızlık, 0 hata ve 0 atlama bildirdi; `bin/rubocop` uyarı bulmadı;
+`bin/brakeman` 0 güvenlik uyarısı bildirdi. Bu sonuçlar henüz CI'da
+doğrulanmadı.
 
-Arayüz yenilemesinden önceki son CI kaydı: 16 Ekim 2026'da `main` üzerinde
-commit `89342d7` için yapılan çalıştırmada dört iş de (`test`, `lint`,
-`scan_ruby`, `scan_js`) geçti; test işi o sürümdeki 139 test için 0
+Son CI kaydı: 16 Ekim 2026'da `main` üzerinde arayüz yenilemesi commit'i
+`4ad9849` için yapılan çalıştırmada dört iş de (`test`, `lint`, `scan_ruby`,
+`scan_js`) geçti; test işi o sürümdeki 158 test ve 803 doğrulama için 0
 başarısızlık ve 0 hata bildirdi
-([çalıştırma](https://github.com/nisanurakgul/destek-akis/actions/runs/38926308162)).
+([çalıştırma](https://github.com/nisanurakgul/destek-akis/actions/runs/38957524979)).
 
 ## İş kuralları
 
@@ -195,6 +212,31 @@ değildir:** ticket'lar, kullanıcılar ve geçmiş her deploy, yeniden başlatm
 uyku modunda silinebilir; servis yeniden başladığında yalnızca ortam
 değişkenlerindeki admin yeniden oluşturulur.
 
+### Canlı demoda örnek talepler (isteğe bağlı)
+
+Ücretsiz planda veritabanı her açılışta boş başladığı için örnek talepler de
+her uyanışta silinir. Bunları her açılışta yeniden eklemek için Render
+panelinde servise `DEMO_SEED_ON_BOOT=1` ortam değişkeni eklenip deploy
+yapılır. Bu değişken `render.yaml`'da tanımlı değildir ve varsayılan olarak
+kapalıdır.
+
+- `bin/docker-entrypoint`, `db:prepare`'den (ve ilk admin seed'inden) sonra
+  `DEMO_SEED_IN_PRODUCTION=1 bin/rails demo:seed` çalıştırır, ardından
+  sunucuyu başlatır.
+- Yalnızca tam olarak `1` değeri etkinleştirir; değişken yoksa veya başka bir
+  değerdeyse açılış eskisi gibidir.
+- Seed başarısız olursa (ör. hiç kullanıcı yoksa) hata günlüğe yazılır ve
+  sunucu örnek veri olmadan başlar. `db:prepare` başarısız olursa açılış eskisi
+  gibi durur.
+- Görev yalnızca eksik örnek talepleri ekler; veri silmez veya değiştirmez.
+  Örnek geçmiş, var olan kullanıcıların (ücretsiz planda yalnızca ortam
+  değişkenlerindeki admin) adına yazılır.
+- Kapatmak için değişkeni silip yeniden deploy etmek yeterlidir.
+
+Bu davranış `test/bin/docker_entrypoint_test.rb` ile test edilir ve yerelde,
+production modunda gerçek açılış komutuyla denendi (bkz.
+[Yapamadıklarım](#yapamadıklarım)).
+
 ## Bilinen sınırlamalar
 
 - **Render ücretsiz planında veri kalıcı değildir.** Ücretsiz web servislerinin
@@ -235,6 +277,10 @@ listeler:
   Container'ın başlangıç komutu ayrıca Docker olmadan, production ortamında
   yerelde çalıştırılarak denendi: veritabanları oluştu, admin seed edildi,
   `/up` 200 döndü, Solid Queue'nun scheduler'ı ve worker'ı çalıştı.
+  `DEMO_SEED_ON_BOOT` da aynı şekilde (Docker olmadan) denendi: değişken
+  yokken 0 talep, `1` iken boş veritabanında 18 talep oluştu, aynı veritabanıyla
+  yeniden açılışta hiçbir şey eklenmedi ve `/up` her seferinde 200 döndü.
+  Render'da henüz denenmedi.
 - **Dependabot'un açtığı iki pull request'te** (`actions/checkout` 7 ve
   `actions/cache` 6 güncellemeleri) CI başarısız oldu; başarısızlığın nedeni
   incelenmedi, iki pull request de açık ve birleştirilmemiş durumda.
@@ -260,6 +306,8 @@ app/controllers/tickets_controller.rb      liste, oluşturma, detay, düzenleme
 app/controllers/ticket_statuses_controller.rb  durum değiştirme
 app/controllers/users_controller.rb        admin'e özel kullanıcı yönetimi
 app/jobs/auto_close_solved_tickets_job.rb  72 saat kuralı
+lib/tasks/demo.rake                        18 örnek talep (bin/rails demo:seed)
+bin/docker-entrypoint                      container açılışı: db:prepare, isteğe bağlı demo seed
 app/views/layouts/application.html.erb     sol menülü uygulama düzeni ve giriş sayfası düzeni
 app/helpers/tickets_helper.rb              durum/öncelik etiketlerinin Türkçe karşılıkları
 app/assets/stylesheets/application.css     tüm arayüz stilleri (düz CSS)

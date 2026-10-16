@@ -8,6 +8,15 @@ export HTTP_PORT="${HTTP_PORT:-${PORT:-80}}"
 # If running the rails server then create or migrate existing database
 if [ "${@: -2:1}" == "./bin/rails" ] && [ "${@: -1:1}" == "server" ]; then
   ./bin/rails db:prepare
+
+  # Optional demo data for the live demo (see docs/DEPLOY_RENDER.md). Off unless
+  # DEMO_SEED_ON_BOOT is exactly "1". demo:seed only adds missing demo tickets;
+  # it never changes or deletes existing records. If it fails, the server still
+  # starts, because the app works without demo data.
+  if [ "${DEMO_SEED_ON_BOOT:-}" == "1" ]; then
+    DEMO_SEED_IN_PRODUCTION=1 ./bin/rails demo:seed ||
+      echo "Demo seed failed; starting the server without demo data." >&2
+  fi
 fi
 
 exec "${@}"
