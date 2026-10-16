@@ -5,6 +5,9 @@ class User < ApplicationRecord
   # Also validates presence on create, a 72-byte maximum and password_confirmation.
   has_secure_password
   has_many :sessions, dependent: :destroy
+  # If a user is deleted, their tickets stay and simply become unassigned.
+  has_many :assigned_tickets, class_name: "Ticket", foreign_key: :assigned_to_id,
+                              inverse_of: :assigned_to, dependent: :nullify
 
   # Roles are stored as strings ("agent", "admin"). validate: true turns an
   # unknown role into a validation error instead of an ArgumentError.

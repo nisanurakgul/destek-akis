@@ -1,0 +1,37 @@
+# One ticket in each status. Fixtures are inserted directly into the database,
+# so they can start in any status (validations do not run for fixtures).
+
+open_ticket:
+  subject: Cannot log in to the portal
+  description: I reset my password but still get an error.
+  requester_name: Ayşe Yılmaz
+  requester_email: ayse@example.com
+  priority: high
+  status: open
+  assigned_to: agent
+
+pending_ticket:
+  subject: Invoice shows the wrong address
+  description: Waiting for the customer to send the correct address.
+  requester_name: Mehmet Demir
+  requester_email: mehmet@example.com
+  priority: normal
+  status: pending
+
+solved_ticket:
+  subject: How do I export my data?
+  description: Sent the customer the export instructions.
+  requester_name: Elif Kaya
+  requester_email: elif@example.com
+  priority: low
+  status: solved
+  assigned_to: agent
+
+closed_ticket:
+  subject: Site was down this morning
+  description: Outage resolved and confirmed by the customer.
+  requester_name: Can Öztürk
+  requester_email: can@example.com
+  priority: urgent
+  status: closed
+  assigned_to: admin
