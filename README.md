@@ -108,10 +108,10 @@ GitHub Actions (`.github/workflows/ci.yml`) `main`'e her push'ta ve her pull
 request'te testleri, RuboCop'u ve güvenlik taramalarını çalıştırır. Ruby sürümü
 `.ruby-version` dosyasından okunur
 ([ruby/setup-ruby](https://github.com/ruby/setup-ruby)). Güncel durum yukarıdaki
-CI rozetinde görünür. 16 Ekim 2026'da `main` üzerindeki son çalıştırmada
-(commit `1d8d3ec`) dört iş de (`test`, `lint`, `scan_ruby`, `scan_js`) geçti;
+CI rozetinde görünür. 16 Ekim 2026'da `main` üzerinde commit `89342d7` için
+yapılan çalıştırmada dört iş de (`test`, `lint`, `scan_ruby`, `scan_js`) geçti;
 test işi 139 test için 0 başarısızlık ve 0 hata bildirdi
-([çalıştırma](https://github.com/nisanurakgul/destek-akis/actions/runs/38908999108)).
+([çalıştırma](https://github.com/nisanurakgul/destek-akis/actions/runs/38926308162)).
 
 ## İş kuralları
 
