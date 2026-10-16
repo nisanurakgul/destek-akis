@@ -41,4 +41,19 @@
   <p class="empty">This ticket is closed. Closed tickets cannot change status.</p>
 <% end %>
 
+<h2>History</h2>
+<% if @events.any? %>
+  <ol class="history">
+    <% @events.each do |event| %>
+      <li id="<%= dom_id(event) %>">
+        <time datetime="<%= event.created_at.iso8601 %>"><%= l event.created_at, format: :short %></time>
+        <strong class="actor"><%= event.actor_name %></strong>
+        <span class="event-description"><%= event.description %></span>
+      </li>
+    <% end %>
+  </ol>
+<% else %>
+  <p class="empty">No history yet.</p>
+<% end %>
+
 <p><%= link_to "Back to tickets", tickets_path %></p>

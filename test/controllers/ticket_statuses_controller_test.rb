@@ -19,6 +19,27 @@ class TicketStatusesControllerTest < ActionDispatch::IntegrationTest
     follow_redirect!
     assert_select ".flash.notice", "Status changed from open to solved."
     assert_select ".badge.status-solved", "Solved"
+    assert_select ".history .event-description", "Status changed from open to solved"
+  end
+
+  test "a status change records who changed it" do
+    sign_in_as users(:admin)
+    ticket = tickets(:open_ticket)
+
+    patch ticket_status_path(ticket), params: { status: "pending" }
+
+    event = ticket.events.last
+    assert event.status_changed?
+    assert_equal "Status changed from open to pending", event.description
+    assert_equal users(:admin), event.user
+  end
+
+  test "a rejected status change records no history" do
+    sign_in_as users(:agent)
+
+    assert_no_difference "TicketEvent.count" do
+      patch ticket_status_path(tickets(:closed_ticket)), params: { status: "open" }
+    end
   end
 
   test "a closed ticket cannot be reopened" do

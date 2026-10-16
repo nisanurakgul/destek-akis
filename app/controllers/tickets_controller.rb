@@ -9,6 +9,7 @@ class TicketsController < ApplicationController
   end
 
   def show
+    @events = @ticket.events.includes(:user)
   end
 
   def new

@@ -8,6 +8,8 @@ class User < ApplicationRecord
   # If a user is deleted, their tickets stay and simply become unassigned.
   has_many :assigned_tickets, class_name: "Ticket", foreign_key: :assigned_to_id,
                               inverse_of: :assigned_to, dependent: :nullify
+  # History stays if a user is deleted; those events then show "System".
+  has_many :ticket_events, dependent: :nullify
 
   # Roles are stored as strings ("agent", "admin"). validate: true turns an
   # unknown role into a validation error instead of an ArgumentError.

@@ -19,6 +19,8 @@ class Ticket < ApplicationRecord
   AUTO_CLOSE_AFTER = 72.hours
 
   belongs_to :assigned_to, class_name: "User", optional: true
+  # History, oldest first. Ordered by id as well so events saved in the same second keep their order.
+  has_many :events, -> { order(:created_at, :id) }, class_name: "TicketEvent", dependent: :destroy
 
   enum :priority, { low: "low", normal: "normal", high: "high", urgent: "urgent" },
        default: :normal, validate: true
@@ -40,6 +42,11 @@ class Ticket < ApplicationRecord
   validate :new_tickets_start_open, on: :create
   validate :status_change_is_allowed, on: :update
 
+  # History is recorded in the same database transaction as the ticket change,
+  # so a ticket is never saved without its event (or the other way round).
+  after_create :record_creation_events
+  after_update :record_change_events
+
   # Can this ticket move from its current (saved) status to new_status?
   def can_transition_to?(new_status)
     TRANSITIONS.fetch(status_in_database, []).include?(new_status.to_s)
@@ -53,6 +60,33 @@ class Ticket < ApplicationRecord
   end
 
   private
+    def record_creation_events
+      record_event :created, "Ticket created"
+      record_event :assigned, "Assigned to #{assigned_to.name}" if assigned_to
+    end
+
+    def record_change_events
+      if saved_change_to_status?
+        from, to = saved_change_to_status
+        record_event :status_changed, "Status changed from #{from} to #{to}"
+      end
+
+      if saved_change_to_assigned_to_id?
+        from_id, to_id = saved_change_to_assigned_to_id
+        record_event :assigned, "Assignee changed from #{assignee_label(from_id)} to #{assignee_label(to_id)}"
+      end
+    end
+
+    # Current.user is the signed-in user (set by the Authentication concern);
+    # it is nil in background jobs, which the history shows as "System".
+    def record_event(kind, description)
+      events.create!(kind: kind, description: description, user: Current.user)
+    end
+
+    def assignee_label(user_id)
+      user_id ? User.find_by(id: user_id)&.name || "a deleted user" : "Unassigned"
+    end
+
     # An unknown status (e.g. "archived") is already reported by the enum's
     # own validation, so the two checks below skip it to avoid a second message.
     def known_status?

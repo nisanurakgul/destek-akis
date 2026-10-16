@@ -85,3 +85,7 @@ th { font-size: 0.85rem; color: var(--muted); }
 }
 .errors { background: #fef2f2; color: #991b1b; border-radius: 6px; padding: 0.5rem 1rem; margin-bottom: 1rem; }
 .errors h2 { font-size: 1rem; }
+
+.history { list-style: none; padding: 0; margin: 0 0 1.5rem; border-left: 3px solid var(--border); }
+.history li { padding: 0.35rem 0 0.35rem 1rem; }
+.history time { color: var(--muted); font-size: 0.85rem; margin-right: 0.5rem; }

@@ -140,6 +140,18 @@ class AutoCloseSolvedTicketsJobTest < ActiveJob::TestCase
     assert_equal SOLVED_AT + 72.hours, ticket.reload.updated_at
   end
 
+  test "auto-closing is recorded in the history as a System change" do
+    ticket = solved_ticket_at(SOLVED_AT)
+
+    run_job_at(SOLVED_AT + 72.hours)
+
+    event = ticket.events.last
+    assert event.status_changed?
+    assert_equal "Status changed from solved to closed", event.description
+    assert_nil event.user
+    assert_equal SOLVED_AT + 72.hours, event.created_at
+  end
+
   # --- safety re-check ---
 
   # Simulates a ticket that was found by the query but reopened by someone

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_10_16_102617) do
+ActiveRecord::Schema[8.1].define(version: 2026_10_16_112438) do
   create_table "sessions", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "ip_address"
@@ -18,6 +18,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_102617) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "ticket_events", force: :cascade do |t|
+    t.integer "ticket_id", null: false
+    t.integer "user_id"
+    t.string "kind", null: false
+    t.string "description", null: false
+    t.datetime "created_at", null: false
+    t.index ["ticket_id"], name: "index_ticket_events_on_ticket_id"
+    t.index ["user_id"], name: "index_ticket_events_on_user_id"
+    t.check_constraint "kind IN ('created', 'assigned', 'status_changed')", name: "ticket_events_kind_check"
   end
 
   create_table "tickets", force: :cascade do |t|
@@ -48,5 +59,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_10_16_102617) do
   end
 
   add_foreign_key "sessions", "users"
+  add_foreign_key "ticket_events", "tickets"
+  add_foreign_key "ticket_events", "users"
   add_foreign_key "tickets", "users", column: "assigned_to_id"
 end

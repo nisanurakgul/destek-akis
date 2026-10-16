@@ -183,4 +183,59 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
     assert ticket.closed?
     assert_equal "Still closed", ticket.subject
   end
+
+  # --- history ---
+
+  test "creating a ticket records who created and assigned it" do
+    sign_in_as users(:admin)
+
+    post tickets_path, params: valid_params
+    events = Ticket.order(:id).last.events
+
+    assert_equal %w[created assigned], events.map(&:kind)
+    assert events.all? { |event| event.user == users(:admin) }
+  end
+
+  test "changing the assignee in the edit form records who did it" do
+    sign_in_as users(:agent)
+    ticket = tickets(:open_ticket)
+
+    assert_difference "ticket.events.count", 1 do
+      patch ticket_path(ticket), params: { ticket: { assigned_to_id: users(:admin).id } }
+    end
+    event = ticket.events.last
+    assert_equal "Assignee changed from Ali Agent to Ada Admin", event.description
+    assert_equal users(:agent), event.user
+  end
+
+  test "a failed update records no history" do
+    sign_in_as users(:agent)
+
+    assert_no_difference "TicketEvent.count" do
+      patch ticket_path(tickets(:open_ticket)), params: { ticket: { subject: "", assigned_to_id: users(:admin).id } }
+    end
+  end
+
+  test "show lists the history oldest first with user and time" do
+    sign_in_as users(:agent)
+    created_at = Time.zone.local(2026, 11, 2, 9, 0, 0)
+    ticket = travel_to(created_at) do
+      Ticket.create!(subject: "History test", description: "d", requester_name: "R", requester_email: "r@example.com")
+    end
+    travel_to(created_at + 1.hour) { ticket.transition_to("pending") }
+
+    get ticket_path(ticket)
+    assert_select ".history li", 2
+    assert_select ".history li:nth-child(1) .event-description", "Ticket created"
+    assert_select ".history li:nth-child(1) .actor", "Ali Agent"
+    assert_select ".history li:nth-child(1) time[datetime=?]", created_at.iso8601
+    assert_select ".history li:nth-child(2) .event-description", "Status changed from open to pending"
+  end
+
+  test "show says when there is no history" do
+    sign_in_as users(:agent)
+
+    get ticket_path(tickets(:open_ticket)) # fixtures have no events
+    assert_select "p.empty", "No history yet."
+  end
 end
