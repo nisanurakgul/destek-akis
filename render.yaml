@@ -1,0 +1,41 @@
+# Render Blueprint for DestekAkış. Reference: https://render.com/docs/blueprint-spec
+#
+# Nothing here deploys by itself: a Blueprint is only used after you connect the
+# repository in the Render dashboard (New > Blueprint), and auto-deploys are off.
+services:
+  - type: web
+    name: destek-akis
+    runtime: docker            # builds the Dockerfile in the repository root
+    plan: free                 # free plan: data is NOT persistent (see docs/DEPLOY_RENDER.md)
+    region: frankfurt
+    autoDeployTrigger: "off"   # deploy manually from the dashboard
+    healthCheckPath: /up
+    envVars:
+      # Signs sessions and cookies. Generated once by Render; replaces RAILS_MASTER_KEY,
+      # since the app keeps no other secrets in config/credentials.yml.enc.
+      - key: SECRET_KEY_BASE
+        generateValue: true
+      # Runs the Solid Queue supervisor (dispatcher, scheduler, worker) inside Puma, so
+      # recurring jobs such as the 72 hour auto-close actually run. Without it only the
+      # web server starts and no job is ever executed.
+      - key: SOLID_QUEUE_IN_PUMA
+        value: "true"
+      # Render sends traffic to $PORT (default 10000). Thruster listens on HTTP_PORT and
+      # starts Puma on its own internal port (3000), so both are set to the same value.
+      - key: PORT
+        value: "10000"
+      - key: HTTP_PORT
+        value: "10000"
+      # First admin, created by db/seeds.rb when the database is new. Render asks for
+      # these values once, when the Blueprint is created.
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+    # Paid plans only: uncomment to keep the SQLite databases across deploys/restarts.
+    # disk:
+    #   name: destek-akis-storage
+    #   mountPath: /rails/storage
+    #   sizeGB: 1
