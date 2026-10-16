@@ -1,5 +1,15 @@
 # DestekAkış
 
+[![CI](https://github.com/nisanurakgul/destek-akis/actions/workflows/ci.yml/badge.svg)](https://github.com/nisanurakgul/destek-akis/actions/workflows/ci.yml)
+
+**Canlı demo:** <https://destek-akis.onrender.com> (`render.yaml`'a göre
+Render ücretsiz planı; ilk istek servis uyanırken yaklaşık bir dakika
+sürebilir ve verilerin kalıcılığı garanti edilmez, bkz.
+[Bilinen sınırlamalar](#bilinen-sınırlamalar)).
+
+Kullanıcı yorumu, sorun tanımı ve çözüm:
+[`docs/KULLANICI_SORUNU.md`](docs/KULLANICI_SORUNU.md).
+
 DestekAkış, bir yazılım mühendisliği dersi ödevi için geliştirilmiş, sunucu
 tarafında render edilen basit bir **müşteri destek talebi (ticket) sistemidir**.
 Destek ekibi talepleri oluşturur, kişilere atar, durumlarını kurallara uygun
@@ -25,6 +35,19 @@ Kod, bir öğrencinin okuyup anlayabileceği şekilde sade tutulmuştur.
 - **Geçmiş (TicketEvent):** oluşturma, atama değişikliği ve durum değişikliği;
   her kayıtta işlemi yapan kullanıcı ve zaman bilgisi bulunur. Otomatik
   kapatma "System" olarak görünür.
+
+## Kullanıcı sorunu
+
+Geçmiş (History) özelliği, başka bir destek yazılımı hakkında Capterra'da
+yayımlanmış bir kullanıcı yorumunda belirtilen sınırlı denetim izi
+eksikliğiyle ilişkilendirilmiştir: Anita T., "Zendesk Suite: Powering support
+with confidence", 16 Aralık 2025, puan 5.0, alıntı: "Audit trail limited"
+([Capterra](https://www.capterra.com/p/164283/Zendesk/reviews/)). Kaynak
+tarayıcıda kontrol edilmiştir. Yorumun kaynağı, sorun tanımı, çözümün ilgili
+dosyaları ve testleri ile çözümün sınırları
+[`docs/KULLANICI_SORUNU.md`](docs/KULLANICI_SORUNU.md) belgesindedir. Yorum
+DestekAkış hakkında yazılmamıştır; History de eksiksiz bir kurumsal denetim
+sistemi değildir, yalnızca kaydedilen olayları gösterir.
 
 ## Teknoloji yığını
 
@@ -81,10 +104,14 @@ bin/brakeman          # güvenlik taraması
 bin/bundler-audit     # gem güvenlik açıkları
 ```
 
-GitHub Actions (`.github/workflows/ci.yml`) her push ve pull request'te
-testleri, RuboCop'u ve güvenlik taramalarını çalıştırır. Ruby sürümü
+GitHub Actions (`.github/workflows/ci.yml`) `main`'e her push'ta ve her pull
+request'te testleri, RuboCop'u ve güvenlik taramalarını çalıştırır. Ruby sürümü
 `.ruby-version` dosyasından okunur
-([ruby/setup-ruby](https://github.com/ruby/setup-ruby)).
+([ruby/setup-ruby](https://github.com/ruby/setup-ruby)). Güncel durum yukarıdaki
+CI rozetinde görünür. 16 Ekim 2026'da `main` üzerindeki son çalıştırmada
+(commit `1d8d3ec`) dört iş de (`test`, `lint`, `scan_ruby`, `scan_js`) geçti;
+test işi 139 test için 0 başarısızlık ve 0 hata bildirdi
+([çalıştırma](https://github.com/nisanurakgul/destek-akis/actions/runs/38908999108)).
 
 ## İş kuralları
 
@@ -127,7 +154,16 @@ Kısaca: `render.yaml` Dockerfile ile bir web servisi tanımlar, otomatik deploy
 kapalıdır, sağlık kontrolü `/up`'tır. Gereken ortam değişkenleri
 `SECRET_KEY_BASE` (Render üretir), `SOLID_QUEUE_IN_PUMA=true`,
 `PORT`/`HTTP_PORT=10000` ve ilk admin için `ADMIN_NAME`, `ADMIN_EMAIL`,
-`ADMIN_PASSWORD`'dür. Uygulama henüz deploy edilmemiştir.
+`ADMIN_PASSWORD`'dür.
+
+Uygulama <https://destek-akis.onrender.com> adresinde yayındadır. Plan
+`render.yaml`'da `plan: free` olarak tanımlıdır; Render panelindeki plan bu
+belge için ayrıca kontrol edilmedi. 16 Ekim 2026'da yapılan kontrolde ilk istek
+servis uyanırken 502 döndü, ardından `/up` 200 döndü ve ana sayfa giriş
+sayfasına yönlendirdi. **Bu ortamda SQLite verilerinin kalıcılığı garanti
+değildir:** ticket'lar, kullanıcılar ve geçmiş her deploy, yeniden başlatma ve
+uyku modunda silinebilir; servis yeniden başladığında yalnızca ortam
+değişkenlerindeki admin yeniden oluşturulur.
 
 ## Bilinen sınırlamalar
 
@@ -138,8 +174,9 @@ kapalıdır, sağlık kontrolü `/up`'tır. Gereken ortam değişkenleri
   ücretli bir instance'a disk bağlamak ya da barındırılan bir veritabanı
   kullanmak gerekir.
 - **Ücretsiz servis uyur.** Trafik yoksa servis durur; bu sırada zamanlanmış
-  görev çalışmaz. Süresi dolan ticket'lar servis uyandıktan sonraki ilk
-  saatlik çalışmada kapanır.
+  görev çalışmaz. Job süresi geçmiş tüm ticket'ları kapattığı için (geç
+  çalışma testlerde doğrulanmıştır) bu ticket'ların servis uyandıktan sonraki
+  ilk saatlik çalışmada kapanması beklenir; bu canlı ortamda gözlemlenmedi.
 - **Ücretsiz planda shell yoktur** ([Render: SSH and Shell Access](https://render.com/docs/ssh));
   bu yüzden Render'da ilk admin `db/seeds.rb` ile oluşturulur.
 - **Parola sıfırlama e-postaları gönderilmez;** e-posta servisi ayarlı değildir.
@@ -152,15 +189,21 @@ kapalıdır, sağlık kontrolü `/up`'tır. Gereken ortam değişkenleri
 Bu bölüm, projenin şu anki durumunda yapılmamış ya da doğrulanamamış işleri
 listeler:
 
-- **Uygulama deploy edilmedi.** Render hesabı oluşturulmadı; ücretli hizmet
-  kullanılmadı.
+- **Kalıcı veri yok.** Canlı demo ücretsiz planda çalışır; kalıcı disk veya
+  barındırılan veritabanı kullanılmadı (ücretli hizmet seçilmedi). Demo
+  verileri her an silinebilir.
+- **Canlı ortamda 72 saat kuralı ve Solid Queue doğrulanmadı.** Render'da
+  yalnızca `/up` ve giriş sayfasına yönlendirme kontrol edildi; servis uyuduğu
+  için zamanlanmış görevin orada çalıştığı gözlemlenmedi.
 - **Docker imajı yerelde derlenmedi** (geliştirme makinesinde Docker kurulu
-  değil). Container'ın başlangıç komutu Docker olmadan, production ortamında
+  değil). Render'daki servis `render.yaml`'a göre (`runtime: docker`)
+  Dockerfile'dan derlenir; Render derleme günlüğü bu belge için incelenmedi.
+  Container'ın başlangıç komutu ayrıca Docker olmadan, production ortamında
   yerelde çalıştırılarak denendi: veritabanları oluştu, admin seed edildi,
   `/up` 200 döndü, Solid Queue'nun scheduler'ı ve worker'ı çalıştı.
-- **GitHub Actions workflow'u henüz GitHub'da çalışmadı;** depo GitHub'a
-  gönderilmedi. Workflow'daki komutlar yerelde başarıyla çalıştı, ancak
-  `ruby/setup-ruby`'nin Ruby 3.4.11'i sağladığı ilk çalıştırmada görülecek.
+- **Dependabot'un açtığı iki pull request'te** (`actions/checkout` 7 ve
+  `actions/cache` 6 güncellemeleri) CI başarısız oldu; başarısızlığın nedeni
+  incelenmedi, iki pull request de açık ve birleştirilmemiş durumda.
 - **Tarayıcı (system) testleri yok;** arayüz entegrasyon testleriyle
   (HTML çıktısı üzerinden) test edildi.
 - **Giriş deneme sınırı (rate limit) test edilmedi;** test ortamında önbellek
@@ -182,5 +225,6 @@ app/controllers/users_controller.rb        admin'e özel kullanıcı yönetimi
 app/jobs/auto_close_solved_tickets_job.rb  72 saat kuralı
 config/recurring.yml                       saatlik zamanlama (production)
 render.yaml, docs/DEPLOY_RENDER.md         Render yapılandırması
+docs/KULLANICI_SORUNU.md                   kullanıcı yorumu, sorun tanımı ve History çözümü
 AGENT.md                                   geliştirici/ajan kuralları
 ```
