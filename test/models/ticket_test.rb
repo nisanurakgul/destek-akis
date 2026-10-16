@@ -313,6 +313,22 @@ class TicketTest < ActiveSupport::TestCase
     assert_not tickets(:closed_ticket).can_transition_to?("open")
   end
 
+  # --- auto-close scope ---
+
+  test "ready_to_auto_close selects solved tickets unchanged for at least 72 hours" do
+    now = Time.zone.local(2026, 11, 5, 12, 0, 0)
+    ticket = tickets(:solved_ticket)
+
+    ticket.update_column(:updated_at, now - 72.hours)
+    assert_includes Ticket.ready_to_auto_close(now), ticket
+
+    ticket.update_column(:updated_at, now - 72.hours + 1.minute)
+    assert_not_includes Ticket.ready_to_auto_close(now), ticket
+
+    tickets(:open_ticket).update_column(:updated_at, now - 1000.hours)
+    assert_not_includes Ticket.ready_to_auto_close(now), tickets(:open_ticket)
+  end
+
   # --- database constraints ---
 
   test "database refuses an unknown status or priority even when validations are skipped" do

@@ -13,12 +13,20 @@ class Ticket < ApplicationRecord
     "closed"  => []
   }.freeze
 
+  # A solved ticket that has not changed for this long is closed automatically
+  # by AutoCloseSolvedTicketsJob. Any change (reopening, editing) moves
+  # updated_at forward and so restarts the countdown.
+  AUTO_CLOSE_AFTER = 72.hours
+
   belongs_to :assigned_to, class_name: "User", optional: true
 
   enum :priority, { low: "low", normal: "normal", high: "high", urgent: "urgent" },
        default: :normal, validate: true
   enum :status, { open: "open", pending: "pending", solved: "solved", closed: "closed" },
        default: :open, validate: true
+
+  # Solved tickets whose last change is at least AUTO_CLOSE_AFTER ago.
+  scope :ready_to_auto_close, ->(now = Time.current) { solved.where(updated_at: ..(now - AUTO_CLOSE_AFTER)) }
 
   normalizes :requester_email, with: ->(e) { e.strip.downcase }
 
