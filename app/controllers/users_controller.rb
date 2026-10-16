@@ -14,7 +14,7 @@ class UsersController < ApplicationController
     @user = User.new(user_params)
 
     if @user.save
-      redirect_to users_path, notice: "User #{@user.name} was created."
+      redirect_to users_path, notice: "#{@user.name} kullanıcısı oluşturuldu."
     else
       render :new, status: :unprocessable_entity
     end
@@ -26,6 +26,6 @@ class UsersController < ApplicationController
     end
 
     def require_admin
-      redirect_to root_path, alert: "Only admins can manage users." unless Current.user.admin?
+      redirect_to root_path, alert: "Kullanıcıları yalnızca yöneticiler yönetebilir." unless Current.user.admin?
     end
 end

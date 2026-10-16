@@ -1,7 +1,19 @@
-<h1>Forgot your password?</h1>
+<% content_for :title, "Parolanı sıfırla · DestekAkış" %>
 
+<div class="auth-header">
+  <h1>Parolanı mı unuttun?</h1>
+  <p>Hesabına ait e-posta adresini gir; parola sıfırlama talimatlarını bu adrese gönderelim.</p>
+</div>
 
-<%= form_with url: passwords_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.submit "Email reset instructions" %>
+<%= form_with url: passwords_path, class: "form" do |form| %>
+  <div class="field">
+    <%= form.label :email_address, "E-posta adresi" %>
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "ornek@sirket.com", value: params[:email_address] %>
+  </div>
+
+  <%= form.submit "Sıfırlama talimatlarını gönder", class: "button button-block", data: { turbo_submits_with: "Gönderiliyor…" } %>
 <% end %>
+
+<p class="auth-footer">
+  <%= link_to new_session_path, class: "text-link" do %><%= icon("arrow-left", size: 16) %>Girişe dön<% end %>
+</p>

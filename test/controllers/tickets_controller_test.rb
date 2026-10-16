@@ -44,11 +44,11 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
     ticket = tickets(:open_ticket)
     assert_select "##{ActionView::RecordIdentifier.dom_id(ticket)}" do
       assert_select "a", ticket.subject
-      assert_select ".badge.status-open", "Open"
-      assert_select ".badge.priority-high", "High"
+      assert_select ".badge.status-open", "Açık"
+      assert_select ".badge.priority-high", "Yüksek"
       assert_select "td", "Ali Agent"
     end
-    assert_select "##{ActionView::RecordIdentifier.dom_id(tickets(:pending_ticket))} td", "Unassigned"
+    assert_select "##{ActionView::RecordIdentifier.dom_id(tickets(:pending_ticket))} td", "Atanmamış"
   end
 
   test "show displays the ticket details" do
@@ -58,8 +58,8 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
     get ticket_path(ticket)
     assert_response :success
     assert_select "h1", "##{ticket.id} #{ticket.subject}"
-    assert_select ".badge.status-closed", "Closed"
-    assert_select ".badge.priority-urgent", "Urgent"
+    assert_select ".badge.status-closed", "Kapalı"
+    assert_select ".badge.priority-urgent", "Acil"
     assert_select "dd", "Ada Admin"
     assert_select ".description", /Outage resolved/
   end
@@ -69,12 +69,12 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
 
     get ticket_path(tickets(:open_ticket))
     assert_select ".status-actions button", count: 2
-    assert_select ".status-actions button", "Mark as pending"
-    assert_select ".status-actions button", "Mark as solved"
+    assert_select ".status-actions button", "Beklemeye al"
+    assert_select ".status-actions button", "Çözüldü olarak işaretle"
 
     get ticket_path(tickets(:closed_ticket))
     assert_select ".status-actions", count: 0
-    assert_select "p", /Closed tickets cannot change status/
+    assert_select "p", /Kapalı taleplerin durumu değiştirilemez/
   end
 
   # --- create ---
@@ -84,7 +84,7 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
 
     get new_ticket_path
     assert_response :success
-    assert_select "select[name='ticket[assigned_to_id]'] option", "Unassigned"
+    assert_select "select[name='ticket[assigned_to_id]'] option", "Atanmamış"
     assert_select "select[name='ticket[assigned_to_id]'] option", "Ali Agent"
   end
 
@@ -236,6 +236,6 @@ class TicketsControllerTest < ActionDispatch::IntegrationTest
     sign_in_as users(:agent)
 
     get ticket_path(tickets(:open_ticket)) # fixtures have no events
-    assert_select "p.empty", "No history yet."
+    assert_select "p.empty", "Henüz işlem geçmişi yok."
   end
 end

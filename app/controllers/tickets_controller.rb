@@ -20,7 +20,7 @@ class TicketsController < ApplicationController
     @ticket = Ticket.new(ticket_params)
 
     if @ticket.save
-      redirect_to @ticket, notice: "Ticket was created."
+      redirect_to @ticket, notice: "Talep oluşturuldu."
     else
       render :new, status: :unprocessable_entity
     end
@@ -31,7 +31,7 @@ class TicketsController < ApplicationController
 
   def update
     if @ticket.update(ticket_params)
-      redirect_to @ticket, notice: "Ticket was updated."
+      redirect_to @ticket, notice: "Talep güncellendi."
     else
       render :edit, status: :unprocessable_entity
     end

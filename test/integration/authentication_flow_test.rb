@@ -27,8 +27,8 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
 
     follow_redirect!
     assert_response :success
-    assert_select "h1", "Welcome, Ali Agent"
-    assert_select "button", "Sign out"
+    assert_select "h1", "Hoş geldin, Ali Agent"
+    assert_select "button", "Çıkış yap"
 
     delete session_path
     assert_redirected_to new_session_path
@@ -49,7 +49,7 @@ class AuthenticationFlowTest < ActionDispatch::IntegrationTest
     assert_redirected_to new_session_path
 
     follow_redirect!
-    assert_select ".flash.alert", "Try another email address or password."
+    assert_select ".flash.alert", "E-posta adresi veya parola hatalı."
   end
 
   test "after signing in the user returns to the page they first asked for" do

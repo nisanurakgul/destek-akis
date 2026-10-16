@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="tr">
   <head>
     <title><%= content_for(:title) || "DestekAkış" %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -23,26 +23,54 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body>
-    <header class="site-header">
-      <%= link_to root_path, class: "brand" do %>Destek<span>Akış</span><% end %>
-      <% if authenticated? %>
-        <nav>
-          <%= link_to "Tickets", tickets_path %>
-          <%= link_to "Users", users_path if Current.user.admin? %>
-        </nav>
-        <div class="current-user">
-          <span><%= Current.user.name %> (<%= Current.user.role %>)</span>
-          <%= button_to "Sign out", session_path, method: :delete, class: "link-button" %>
+  <body class="<%= authenticated? ? "layout-app" : "layout-auth" %>">
+    <a class="skip-link" href="#main">İçeriğe geç</a>
+
+    <% if authenticated? %>
+      <div class="app-shell">
+        <aside class="sidebar">
+          <%= link_to root_path, class: "brand", "aria-label": "DestekAkış ana sayfa" do %>
+            <span class="brand-mark"><%= icon("flow", size: 18) %></span>
+            <span class="brand-name">Destek<span>Akış</span></span>
+          <% end %>
+
+          <nav class="sidebar-nav" aria-label="Ana menü">
+            <%= nav_link "Genel bakış", root_path, "home", active: controller_name == "home" %>
+            <%= nav_link "Talepler", tickets_path, "inbox", active: controller_name.in?(%w[tickets ticket_statuses]) %>
+            <% if Current.user.admin? %>
+              <%= nav_link "Kullanıcılar", users_path, "users", active: controller_name == "users" %>
+            <% end %>
+          </nav>
+
+          <div class="sidebar-user">
+            <%= avatar(Current.user.name) %>
+            <div class="sidebar-user-info">
+              <span class="sidebar-user-name"><%= Current.user.name %></span>
+              <span class="sidebar-user-role"><%= role_label(Current.user.role) %></span>
+            </div>
+            <%= button_to session_path, method: :delete, class: "icon-button", title: "Çıkış yap", form_class: "signout-form" do %><%= icon("log-out") %><span class="visually-hidden">Çıkış yap</span><% end %>
+          </div>
+        </aside>
+
+        <main id="main" class="app-content" tabindex="-1">
+          <%= render "layouts/flash" %>
+          <%= yield %>
+        </main>
+      </div>
+    <% else %>
+      <main id="main" class="auth-shell" tabindex="-1">
+        <div class="auth-panel">
+          <div class="auth-brand">
+            <span class="brand-mark brand-mark-lg"><%= icon("flow", size: 22) %></span>
+            <span class="brand-name">Destek<span>Akış</span></span>
+          </div>
+          <div class="auth-card">
+            <%= render "layouts/flash" %>
+            <%= yield %>
+          </div>
+          <p class="auth-legal">DestekAkış · Müşteri destek talebi yönetimi</p>
         </div>
-      <% end %>
-    </header>
-
-    <%= tag.div(flash[:alert], class: "flash alert") if flash[:alert] %>
-    <%= tag.div(flash[:notice], class: "flash notice") if flash[:notice] %>
-
-    <main>
-      <%= yield %>
-    </main>
+      </main>
+    <% end %>
   </body>
 </html>

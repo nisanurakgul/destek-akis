@@ -1,9 +1,64 @@
-<h1>Welcome, <%= Current.user.name %></h1>
+<% content_for :title, "Genel bakış · DestekAkış" %>
 
-<p>You are signed in as <strong><%= Current.user.role %></strong>.</p>
+<header class="page-header">
+  <div class="page-heading">
+    <p class="eyebrow">Genel bakış</p>
+    <h1 class="page-title">Hoş geldin, <%= Current.user.name %></h1>
+    <p class="page-subtitle"><strong><%= role_label(Current.user.role) %></strong> olarak oturum açtın.</p>
+  </div>
+  <div class="page-actions">
+    <%= link_to new_ticket_path, class: "button" do %><%= icon("plus") %>Yeni talep<% end %>
+  </div>
+</header>
 
-<p><%= link_to "View tickets", tickets_path, class: "button" %></p>
+<section class="stat-grid" aria-label="Duruma göre talep sayıları">
+  <% Ticket.statuses.each_key do |status| %>
+    <div class="stat-card">
+      <span class="stat-label"><span class="status-dot status-<%= status %>" aria-hidden="true"></span><%= status_label(status) %></span>
+      <span class="stat-value"><%= @status_counts.fetch(status, 0) %></span>
+    </div>
+  <% end %>
+</section>
 
-<% if Current.user.admin? %>
-  <p><%= link_to "Manage users", users_path %></p>
-<% end %>
+<div class="grid-2">
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Sana atanan aktif talepler</h2>
+    </div>
+    <div class="card-body">
+      <p class="metric"><span class="metric-value"><%= @my_active_count %></span> talep açık veya beklemede</p>
+      <%= link_to tickets_path, class: "text-link" do %>Talep listesine git<%= icon("arrow-right", size: 16) %><% end %>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h2 class="card-title">Hızlı işlemler</h2>
+    </div>
+    <ul class="quick-links">
+      <li>
+        <%= link_to tickets_path, class: "quick-link" do %>
+          <span class="quick-link-icon"><%= icon("inbox") %></span>
+          <span><strong>Talepleri görüntüle</strong><small>Tüm destek taleplerinin listesi</small></span>
+          <%= icon("chevron-right", css_class: "quick-link-arrow") %>
+        <% end %>
+      </li>
+      <li>
+        <%= link_to new_ticket_path, class: "quick-link" do %>
+          <span class="quick-link-icon"><%= icon("plus-circle") %></span>
+          <span><strong>Yeni talep oluştur</strong><small>Müşteriden gelen bir talebi kaydet</small></span>
+          <%= icon("chevron-right", css_class: "quick-link-arrow") %>
+        <% end %>
+      </li>
+      <% if Current.user.admin? %>
+        <li>
+          <%= link_to users_path, class: "quick-link" do %>
+            <span class="quick-link-icon"><%= icon("users") %></span>
+            <span><strong>Kullanıcıları yönet</strong><small>Ekip üyelerini görüntüle ve ekle</small></span>
+            <%= icon("chevron-right", css_class: "quick-link-arrow") %>
+          <% end %>
+        </li>
+      <% end %>
+    </ul>
+  </section>
+</div>

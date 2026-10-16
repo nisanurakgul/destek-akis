@@ -1,10 +1,25 @@
-<h1>Sign in</h1>
+<% content_for :title, "Giriş yap · DestekAkış" %>
 
-<%= form_with url: session_path do |form| %>
-  <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "Enter your email address", value: params[:email_address] %><br>
-  <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Enter your password", maxlength: 72 %><br>
-  <%= form.submit "Sign in" %>
+<div class="auth-header">
+  <h1>Hesabına giriş yap</h1>
+  <p>Destek taleplerini yönetmek için e-posta adresin ve parolanla giriş yap.</p>
+</div>
+
+<%= form_with url: session_path, class: "form" do |form| %>
+  <div class="field">
+    <%= form.label :email_address, "E-posta adresi" %>
+    <%= form.email_field :email_address, required: true, autofocus: true, autocomplete: "username", placeholder: "ornek@sirket.com", value: params[:email_address] %>
+  </div>
+
+  <div class="field">
+    <div class="label-row">
+      <%= form.label :password, "Parola" %>
+      <%= link_to "Parolanı mı unuttun?", new_password_path, class: "text-link small" %>
+    </div>
+    <%= form.password_field :password, required: true, autocomplete: "current-password", placeholder: "Parolan", maxlength: 72 %>
+  </div>
+
+  <%= form.submit "Giriş yap", class: "button button-block", data: { turbo_submits_with: "Giriş yapılıyor…" } %>
 <% end %>
-<br>
 
-<%= link_to "Forgot password?", new_password_path %>
+<p class="auth-footer">Hesabın yok mu? Kullanıcı hesaplarını yalnızca yöneticiler oluşturabilir.</p>

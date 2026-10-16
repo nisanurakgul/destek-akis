@@ -17,8 +17,8 @@ class TicketStatusesControllerTest < ActionDispatch::IntegrationTest
     assert ticket.reload.solved?
 
     follow_redirect!
-    assert_select ".flash.notice", "Status changed from open to solved."
-    assert_select ".badge.status-solved", "Solved"
+    assert_select ".flash.notice", "Durum güncellendi: Açık → Çözüldü."
+    assert_select ".badge.status-solved", "Çözüldü"
     assert_select ".history .event-description", "Status changed from open to solved"
   end
 
@@ -51,8 +51,8 @@ class TicketStatusesControllerTest < ActionDispatch::IntegrationTest
     assert ticket.reload.closed?
 
     follow_redirect!
-    assert_select ".flash.alert", "Status cannot change from closed to open"
-    assert_select ".badge.status-closed", "Closed"
+    assert_select ".flash.alert", "Durum değiştirilemedi. Status cannot change from closed to open"
+    assert_select ".badge.status-closed", "Kapalı"
   end
 
   test "skipping a step is rejected" do
@@ -62,7 +62,7 @@ class TicketStatusesControllerTest < ActionDispatch::IntegrationTest
     patch ticket_status_path(ticket), params: { status: "closed" }
     assert ticket.reload.open?
     follow_redirect!
-    assert_select ".flash.alert", "Status cannot change from open to closed"
+    assert_select ".flash.alert", "Durum değiştirilemedi. Status cannot change from open to closed"
   end
 
   test "an unknown status is rejected" do
@@ -72,7 +72,7 @@ class TicketStatusesControllerTest < ActionDispatch::IntegrationTest
     patch ticket_status_path(ticket), params: { status: "archived" }
     assert ticket.reload.open?
     follow_redirect!
-    assert_select ".flash.alert", "Status is not included in the list"
+    assert_select ".flash.alert", "Durum değiştirilemedi. Status is not included in the list"
   end
 
   test "a missing status parameter is a bad request" do

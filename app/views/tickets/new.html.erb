@@ -1,7 +1,15 @@
-<% content_for :title, "New ticket · DestekAkış" %>
+<% content_for :title, "Yeni talep · DestekAkış" %>
 
-<h1>New ticket</h1>
+<header class="page-header">
+  <div class="page-heading">
+    <nav class="breadcrumb" aria-label="Konum">
+      <%= link_to "Talepler", tickets_path %><%= icon("chevron-right", size: 14) %><span aria-current="page">Yeni talep</span>
+    </nav>
+    <h1 class="page-title">Yeni talep</h1>
+    <p class="page-subtitle">Müşteriden gelen destek talebini kaydet ve gerekirse bir ekip üyesine ata.</p>
+  </div>
+</header>
 
-<%= render "form", ticket: @ticket, users: @users %>
-
-<p><%= link_to "Back to tickets", tickets_path %></p>
+<div class="narrow">
+  <%= render "form", ticket: @ticket, users: @users %>
+</div>

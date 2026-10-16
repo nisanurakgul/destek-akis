@@ -6,9 +6,9 @@ class TicketStatusesController < ApplicationController
     old_status = ticket.status
 
     if ticket.transition_to(params.expect(:status))
-      redirect_to ticket, notice: "Status changed from #{old_status} to #{ticket.status}."
+      redirect_to ticket, notice: "Durum güncellendi: #{helpers.status_label(old_status)} → #{helpers.status_label(ticket.status)}."
     else
-      redirect_to ticket, alert: ticket.errors.full_messages.to_sentence
+      redirect_to ticket, alert: "Durum değiştirilemedi. #{ticket.errors.full_messages.to_sentence}"
     end
   end
 end

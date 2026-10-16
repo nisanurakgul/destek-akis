@@ -1,0 +1,6 @@
+<% if flash[:alert] %>
+  <div class="flash alert" role="alert"><%= icon("alert-circle") %><span><%= flash[:alert] %></span></div>
+<% end %>
+<% if flash[:notice] %>
+  <div class="flash notice" role="status"><%= icon("check-circle") %><span><%= flash[:notice] %></span></div>
+<% end %>

@@ -1,6 +1,6 @@
 class PasswordsMailer < ApplicationMailer
   def reset(user)
     @user = user
-    mail subject: "Reset your password", to: user.email_address
+    mail subject: "DestekAkış parolanı sıfırla", to: user.email_address
   end
 end

@@ -1,7 +1,7 @@
-<%= form_with model: ticket, class: "form" do |form| %>
+<%= form_with model: ticket, class: "form card" do |form| %>
   <% if ticket.errors.any? %>
-    <div class="errors">
-      <h2><%= pluralize(ticket.errors.count, "error") %> prevented this ticket from being saved:</h2>
+    <div class="errors" role="alert">
+      <div class="errors-title"><%= icon("alert-circle") %><h2>Talep kaydedilemedi. Lütfen <%= ticket.errors.count %> hatayı düzelt:</h2></div>
       <ul>
         <% ticket.errors.full_messages.each do |message| %>
           <li><%= message %></li>
@@ -10,35 +10,59 @@
     </div>
   <% end %>
 
-  <div class="field">
-    <%= form.label :subject %>
-    <%= form.text_field :subject, required: true, maxlength: 200 %>
-  </div>
+  <fieldset class="form-section">
+    <legend class="form-section-title">Talep bilgileri</legend>
 
-  <div class="field">
-    <%= form.label :description %>
-    <%= form.text_area :description, required: true, rows: 6 %>
-  </div>
+    <div class="field">
+      <%= form.label :subject, "Konu" %>
+      <%= form.text_field :subject, required: true, maxlength: 200, placeholder: "Sorunu kısaca özetle" %>
+    </div>
 
-  <div class="field">
-    <%= form.label :requester_name %>
-    <%= form.text_field :requester_name, required: true, maxlength: 100 %>
-  </div>
+    <div class="field">
+      <%= form.label :description, "Açıklama" %>
+      <%= form.text_area :description, required: true, rows: 6, placeholder: "Sorunun ayrıntıları, hata mesajları, denenen adımlar…" %>
+    </div>
+  </fieldset>
 
-  <div class="field">
-    <%= form.label :requester_email %>
-    <%= form.email_field :requester_email, required: true %>
-  </div>
+  <fieldset class="form-section">
+    <legend class="form-section-title">Talep eden</legend>
 
-  <div class="field">
-    <%= form.label :priority %>
-    <%= form.select :priority, Ticket.priorities.keys.map { |p| [ p.humanize, p ] } %>
-  </div>
+    <div class="field-row">
+      <div class="field">
+        <%= form.label :requester_name, "Ad soyad" %>
+        <%= form.text_field :requester_name, required: true, maxlength: 100 %>
+      </div>
 
-  <div class="field">
-    <%= form.label :assigned_to_id, "Assigned to" %>
-    <%= form.collection_select :assigned_to_id, users, :id, :name, include_blank: "Unassigned" %>
-  </div>
+      <div class="field">
+        <%= form.label :requester_email, "E-posta adresi" %>
+        <%= form.email_field :requester_email, required: true %>
+      </div>
+    </div>
+  </fieldset>
 
-  <%= form.submit class: "button" %>
+  <fieldset class="form-section">
+    <legend class="form-section-title">Öncelik ve atama</legend>
+
+    <div class="field-row">
+      <div class="field">
+        <%= form.label :priority, "Öncelik" %>
+        <%= form.select :priority, Ticket.priorities.keys.map { |p| [ priority_label(p), p ] } %>
+      </div>
+
+      <div class="field">
+        <%= form.label :assigned_to_id, "Atanan kişi" %>
+        <%= form.collection_select :assigned_to_id, users, :id, :name, include_blank: "Atanmamış" %>
+      </div>
+    </div>
+    <% if ticket.new_record? %>
+      <p class="field-hint">Yeni talepler her zaman <strong>Açık</strong> durumunda başlar.</p>
+    <% else %>
+      <p class="field-hint">Durum bu formdan değil, talep sayfasındaki durum butonlarıyla değiştirilir.</p>
+    <% end %>
+  </fieldset>
+
+  <div class="form-actions">
+    <%= link_to "Vazgeç", (ticket.persisted? ? ticket : tickets_path), class: "button secondary" %>
+    <%= form.submit (ticket.new_record? ? "Talebi oluştur" : "Değişiklikleri kaydet"), class: "button", data: { turbo_submits_with: "Kaydediliyor…" } %>
+  </div>
 <% end %>

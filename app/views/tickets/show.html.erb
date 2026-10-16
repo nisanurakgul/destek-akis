@@ -1,59 +1,109 @@
-<% content_for :title, "Ticket ##{@ticket.id} · DestekAkış" %>
+<% content_for :title, "Talep ##{@ticket.id} · DestekAkış" %>
 
-<div class="page-header">
-  <h1>#<%= @ticket.id %> <%= @ticket.subject %></h1>
-  <%= link_to "Edit", edit_ticket_path(@ticket), class: "button secondary" %>
-</div>
-
-<dl class="details">
-  <dt>Status</dt>
-  <dd><%= status_badge(@ticket) %></dd>
-
-  <dt>Priority</dt>
-  <dd><%= priority_badge(@ticket) %></dd>
-
-  <dt>Assigned to</dt>
-  <dd><%= assignee_name(@ticket) %></dd>
-
-  <dt>Requester</dt>
-  <dd><%= @ticket.requester_name %> &lt;<%= @ticket.requester_email %>&gt;</dd>
-
-  <dt>Created</dt>
-  <dd><%= l @ticket.created_at, format: :long %></dd>
-
-  <dt>Last updated</dt>
-  <dd><%= l @ticket.updated_at, format: :long %></dd>
-</dl>
-
-<h2>Description</h2>
-<div class="description"><%= simple_format @ticket.description %></div>
-
-<h2>Change status</h2>
-<% next_statuses = Ticket::TRANSITIONS.fetch(@ticket.status) %>
-<% if next_statuses.any? %>
-  <div class="status-actions">
-    <% next_statuses.each do |status| %>
-      <%= button_to "Mark as #{status}", ticket_status_path(@ticket),
-            method: :patch, params: { status: status }, class: "button secondary" %>
-    <% end %>
+<header class="page-header">
+  <div class="page-heading">
+    <nav class="breadcrumb" aria-label="Konum">
+      <%= link_to "Talepler", tickets_path %><%= icon("chevron-right", size: 14) %><span aria-current="page">#<%= @ticket.id %></span>
+    </nav>
+    <h1 class="page-title"><span class="ticket-number">#<%= @ticket.id %></span> <%= @ticket.subject %></h1>
+    <div class="page-meta">
+      <%= status_badge(@ticket) %>
+      <%= priority_badge(@ticket) %>
+      <span class="meta-text"><%= icon("clock", size: 14) %><%= format_datetime(@ticket.created_at) %> tarihinde oluşturuldu</span>
+    </div>
   </div>
-<% else %>
-  <p class="empty">This ticket is closed. Closed tickets cannot change status.</p>
-<% end %>
+  <div class="page-actions">
+    <%= link_to edit_ticket_path(@ticket), class: "button secondary" do %><%= icon("pencil", size: 16) %>Düzenle<% end %>
+  </div>
+</header>
 
-<h2>History</h2>
-<% if @events.any? %>
-  <ol class="history">
-    <% @events.each do |event| %>
-      <li id="<%= dom_id(event) %>">
-        <time datetime="<%= event.created_at.iso8601 %>"><%= l event.created_at, format: :short %></time>
-        <strong class="actor"><%= event.actor_name %></strong>
-        <span class="event-description"><%= event.description %></span>
-      </li>
-    <% end %>
-  </ol>
-<% else %>
-  <p class="empty">No history yet.</p>
-<% end %>
+<div class="detail-layout">
+  <div class="detail-main">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Açıklama</h2></div>
+      <div class="card-body description"><%= simple_format @ticket.description %></div>
+    </section>
 
-<p><%= link_to "Back to tickets", tickets_path %></p>
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Durumu değiştir</h2></div>
+      <div class="card-body">
+        <% next_statuses = Ticket::TRANSITIONS.fetch(@ticket.status) %>
+        <% if next_statuses.any? %>
+          <div class="status-actions">
+            <% next_statuses.each do |status| %>
+              <%= button_to transition_label(status), ticket_status_path(@ticket),
+                    method: :patch, params: { status: status },
+                    class: (status == "solved" ? "button" : "button secondary"),
+                    data: { turbo_submits_with: "Güncelleniyor…" } %>
+            <% end %>
+          </div>
+          <% if @ticket.solved? %>
+            <p class="inline-note"><%= icon("clock", size: 16) %>
+              <span>Bu talep değişmeden kalırsa <strong><%= format_datetime(@ticket.updated_at + Ticket::AUTO_CLOSE_AFTER) %></strong> sonrasında otomatik olarak kapatılır. Herhangi bir değişiklik bu süreyi yeniden başlatır.</span>
+            </p>
+          <% end %>
+        <% else %>
+          <p class="empty inline-note"><%= icon("lock", size: 16) %><span>Bu talep kapalı. Kapalı taleplerin durumu değiştirilemez.</span></p>
+        <% end %>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">İşlem geçmişi</h2></div>
+      <div class="card-body">
+        <% if @events.any? %>
+          <ol class="history">
+            <% @events.each do |event| %>
+              <li id="<%= dom_id(event) %>" class="history-item kind-<%= event.kind %>">
+                <span class="history-marker"><%= event_icon(event) %></span>
+                <div class="history-content">
+                  <p><strong class="actor"><%= event_actor_name(event) %></strong> <span class="event-description"><%= event.description %></span></p>
+                  <time datetime="<%= event.created_at.iso8601 %>"><%= format_datetime(event.created_at) %></time>
+                </div>
+              </li>
+            <% end %>
+          </ol>
+        <% else %>
+          <p class="empty">Henüz işlem geçmişi yok.</p>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+  <aside class="detail-side">
+    <section class="card">
+      <div class="card-header"><h2 class="card-title">Ayrıntılar</h2></div>
+      <dl class="details">
+        <div class="detail-row">
+          <dt>Durum</dt>
+          <dd><%= status_badge(@ticket) %></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Öncelik</dt>
+          <dd><%= priority_badge(@ticket) %></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Atanan kişi</dt>
+          <dd><%= assignee_with_avatar(@ticket) %></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Talep eden</dt>
+          <dd>
+            <span class="detail-strong"><%= @ticket.requester_name %></span>
+            <%= mail_to @ticket.requester_email, class: "detail-sub" %>
+          </dd>
+        </div>
+        <div class="detail-row">
+          <dt>Oluşturulma</dt>
+          <dd><time datetime="<%= @ticket.created_at.iso8601 %>"><%= format_datetime(@ticket.created_at) %></time></dd>
+        </div>
+        <div class="detail-row">
+          <dt>Son güncelleme</dt>
+          <dd><time datetime="<%= @ticket.updated_at.iso8601 %>"><%= format_datetime(@ticket.updated_at) %></time></dd>
+        </div>
+      </dl>
+    </section>
+
+    <%= link_to tickets_path, class: "text-link back-link" do %><%= icon("arrow-left", size: 16) %>Tüm taleplere dön<% end %>
+  </aside>
+</div>

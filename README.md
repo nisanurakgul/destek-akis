@@ -33,12 +33,23 @@ Kod, bir öğrencinin okuyup anlayabileceği şekilde sade tutulmuştur.
 - **72 saat kuralı:** `solved` durumunda 72 saat değişmeyen ticket otomatik
   olarak `closed` olur.
 - **Geçmiş (TicketEvent):** oluşturma, atama değişikliği ve durum değişikliği;
-  her kayıtta işlemi yapan kullanıcı ve zaman bilgisi bulunur. Otomatik
-  kapatma "System" olarak görünür.
+  her kayıtta işlemi yapan kullanıcı ve zaman bilgisi bulunur. Talep detay
+  sayfasında "İşlem geçmişi" başlığıyla gösterilir; otomatik kapatma
+  "Sistem" olarak görünür.
+- **Arayüz:** Türkçe, sol menülü bir yönetim paneli. Sayfalar: giriş ve
+  parola sıfırlama, genel bakış (duruma göre talep sayıları, kullanıcıya
+  atanmış açık/bekleyen talep sayısı), talep listesi, talep oluşturma,
+  detay ve düzenleme, kullanıcı listesi ve kullanıcı oluşturma (yalnızca
+  admin). Durum ve öncelikler renkli etiketlerle gösterilir (durumlar:
+  Açık, Beklemede, Çözüldü, Kapalı; öncelikler: Düşük, Normal, Yüksek,
+  Acil); veritabanında İngilizce değerler (`open`, `high` vb.) saklanmaya
+  devam eder. Arayüz masaüstü öncelikli olup dar ekranlarda da kullanılabilir
+  (mobilde talep listesi kart görünümüne geçer). 400, 404, 422, 500 ve
+  desteklenmeyen tarayıcı hata sayfaları da Türkçedir.
 
 ## Kullanıcı sorunu
 
-Geçmiş (History) özelliği, başka bir destek yazılımı hakkında Capterra'da
+Geçmiş özelliği (arayüzde "İşlem geçmişi"), başka bir destek yazılımı hakkında Capterra'da
 yayımlanmış bir kullanıcı yorumunda belirtilen sınırlı denetim izi
 eksikliğiyle ilişkilendirilmiştir: Anita T., "Zendesk Suite: Powering support
 with confidence", 16 Aralık 2025, puan 5.0, alıntı: "Audit trail limited"
@@ -46,7 +57,7 @@ with confidence", 16 Aralık 2025, puan 5.0, alıntı: "Audit trail limited"
 tarayıcıda kontrol edilmiştir. Yorumun kaynağı, sorun tanımı, çözümün ilgili
 dosyaları ve testleri ile çözümün sınırları
 [`docs/KULLANICI_SORUNU.md`](docs/KULLANICI_SORUNU.md) belgesindedir. Yorum
-DestekAkış hakkında yazılmamıştır; History de eksiksiz bir kurumsal denetim
+DestekAkış hakkında yazılmamıştır; geçmiş özelliği de eksiksiz bir kurumsal denetim
 sistemi değildir, yalnızca kaydedilen olayları gösterir.
 
 ## Teknoloji yığını
@@ -55,7 +66,7 @@ sistemi değildir, yalnızca kaydedilen olayları gösterir.
 |---|---|
 | Dil / çatı | Ruby 3.4.11, Rails 8.1.4 |
 | Veritabanı | SQLite (`sqlite3` gem 2.x) |
-| Arayüz | Sunucu tarafı ERB görünümleri, Propshaft, importmap, düz CSS |
+| Arayüz | Sunucu tarafı ERB görünümleri, Propshaft, importmap, Turbo; tek dosyada düz CSS (`app/assets/stylesheets/application.css`) ve satır içi SVG ikonlar. Ek CSS/JS kütüphanesi ve build adımı yoktur. |
 | Arka plan işleri | Solid Queue (zamanlanmış görevler `config/recurring.yml`) |
 | Testler | Minitest, fixture'lar, `travel_to` |
 | Kalite | RuboCop (rails-omakase), Brakeman, bundler-audit |
@@ -72,6 +83,9 @@ paketi gerekmez; `sqlite3` gem'i SQLite kütüphanesini kendi içinde getirir
 bin/setup --skip-server   # gem'leri kurar, veritabanlarını hazırlar
 bin/rails server          # http://localhost:3000
 ```
+
+Tarayıcıda <http://localhost:3000> açıldığında, oturum yoksa giriş sayfasına
+yönlendirilirsiniz.
 
 ### İlk admin kullanıcısını oluşturma
 
@@ -108,9 +122,17 @@ GitHub Actions (`.github/workflows/ci.yml`) `main`'e her push'ta ve her pull
 request'te testleri, RuboCop'u ve güvenlik taramalarını çalıştırır. Ruby sürümü
 `.ruby-version` dosyasından okunur
 ([ruby/setup-ruby](https://github.com/ruby/setup-ruby)). Güncel durum yukarıdaki
-CI rozetinde görünür. 16 Ekim 2026'da `main` üzerinde commit `89342d7` için
-yapılan çalıştırmada dört iş de (`test`, `lint`, `scan_ruby`, `scan_js`) geçti;
-test işi 139 test için 0 başarısızlık ve 0 hata bildirdi
+CI rozetinde görünür.
+
+Son yerel çalıştırma (16 Ekim 2026, arayüz yenilemesinden sonra):
+`bin/rails test` 158 test ve 803 doğrulama için 0 başarısızlık, 0 hata ve 0
+atlama bildirdi; `bin/rubocop` uyarı bulmadı; `bin/brakeman` 0 güvenlik
+uyarısı bildirdi. Bu sonuçlar henüz CI'da doğrulanmadı.
+
+Arayüz yenilemesinden önceki son CI kaydı: 16 Ekim 2026'da `main` üzerinde
+commit `89342d7` için yapılan çalıştırmada dört iş de (`test`, `lint`,
+`scan_ruby`, `scan_js`) geçti; test işi o sürümdeki 139 test için 0
+başarısızlık ve 0 hata bildirdi
 ([çalıştırma](https://github.com/nisanurakgul/destek-akis/actions/runs/38926308162)).
 
 ## İş kuralları
@@ -125,8 +147,11 @@ closed  -> (hiçbiri)
 ```
 
 Kurallar `Ticket::TRANSITIONS` içinde tanımlıdır ve model doğrulaması olarak
-uygulanır. Yeni ticket her zaman `open` başlar. Durum yalnızca ticket detay
-sayfasındaki butonlarla değiştirilir; düzenleme formu `status` alanını kabul
+uygulanır. Yeni ticket her zaman `open` (arayüzde "Açık") başlar. Durum
+yalnızca ticket detay sayfasındaki "Durumu değiştir" butonlarıyla
+değiştirilir (`PATCH /tickets/:id/status`); sayfada yalnızca mevcut durumdan
+izin verilen geçişlerin butonları gösterilir ("Beklemeye al", "Çözüldü olarak
+işaretle", "Yeniden aç", "Kapat"). Düzenleme formu `status` alanını kabul
 etmez.
 
 ### 72 saat sonra otomatik kapatma
@@ -135,12 +160,17 @@ etmez.
    `solved` ticket'ları bulur (`Ticket.ready_to_auto_close`).
 2. Her birini kilitleyip yeniden okur; arada değiştiyse dokunmaz.
 3. `transition_to("closed")` ile kapatır, yani normal geçiş kuralları geçerlidir.
+   Geçmişe işlemi yapan olarak "Sistem" yazılır.
 
 Ölçü `updated_at` olduğu için `solved` bir ticket'ta yapılan **her değişiklik**
 (yeniden açma, düzenleme, atama) 72 saatlik süreyi baştan başlatır. Sınır
 dahildir: tam 72. saatte kapanır, 71 saat 59 dakikada kapanmaz. Bu senaryolar
 [`travel_to`](https://api.rubyonrails.org/classes/ActiveSupport/Testing/TimeHelpers.html)
 ile `test/jobs/auto_close_solved_tickets_job_test.rb` içinde test edilir.
+
+Çözülmüş bir ticket'ın detay sayfası, değişiklik yapılmazsa hangi tarihten
+sonra otomatik kapatılacağını gösterir (`updated_at + 72 saat`). Görev saatte
+bir çalıştığı için kapanma bu andan sonraki ilk çalıştırmada gerçekleşir.
 
 Production'da görev `config/recurring.yml` ile saatte bir çalışır. Bunun için
 Solid Queue'nun Puma içinde başlatılması gerekir (`SOLID_QUEUE_IN_PUMA=true`,
@@ -180,7 +210,11 @@ değişkenlerindeki admin yeniden oluşturulur.
 - **Ücretsiz planda shell yoktur** ([Render: SSH and Shell Access](https://render.com/docs/ssh));
   bu yüzden Render'da ilk admin `db/seeds.rb` ile oluşturulur.
 - **Parola sıfırlama e-postaları gönderilmez;** e-posta servisi ayarlı değildir.
-- **Arayüz metinleri İngilizcedir.**
+- **Arayüz Türkçedir, ancak bazı metinler İngilizce kalmıştır:** model
+  doğrulama hata mesajları (ör. "Subject can't be blank") ve veritabanına
+  yazılan geçmiş açıklamaları (ör. "Status changed from open to solved").
+  Eski kayıtları değiştirmemek için bunlar çevrilmedi.
+- **Saatler UTC olarak gösterilir;** `config.time_zone` ayarlanmamıştır.
 - Durum geçiş kuralları veritabanı seviyesinde değil, model seviyesinde
   uygulanır (`update_column` gibi doğrulamayı atlayan kod bunları aşabilir).
 
@@ -205,7 +239,10 @@ listeler:
   `actions/cache` 6 güncellemeleri) CI başarısız oldu; başarısızlığın nedeni
   incelenmedi, iki pull request de açık ve birleştirilmemiş durumda.
 - **Tarayıcı (system) testleri yok;** arayüz entegrasyon testleriyle
-  (HTML çıktısı üzerinden) test edildi.
+  (HTML çıktısı üzerinden) test edildi. Yenilenen arayüz ayrıca masaüstü
+  (1440 px) ve mobil (390 px) genişlikte headless Chrome ile bir kez elle
+  kontrol edildi; bu kontrol otomatik değildir ve başka tarayıcılarda
+  denenmedi.
 - **Giriş deneme sınırı (rate limit) test edilmedi;** test ortamında önbellek
   kapalı olduğu için devreye girmez.
 - **Kullanıcı düzenleme/silme, ticket silme, arama ve filtreleme yok;**
@@ -223,8 +260,11 @@ app/controllers/tickets_controller.rb      liste, oluşturma, detay, düzenleme
 app/controllers/ticket_statuses_controller.rb  durum değiştirme
 app/controllers/users_controller.rb        admin'e özel kullanıcı yönetimi
 app/jobs/auto_close_solved_tickets_job.rb  72 saat kuralı
+app/views/layouts/application.html.erb     sol menülü uygulama düzeni ve giriş sayfası düzeni
+app/helpers/tickets_helper.rb              durum/öncelik etiketlerinin Türkçe karşılıkları
+app/assets/stylesheets/application.css     tüm arayüz stilleri (düz CSS)
 config/recurring.yml                       saatlik zamanlama (production)
 render.yaml, docs/DEPLOY_RENDER.md         Render yapılandırması
-docs/KULLANICI_SORUNU.md                   kullanıcı yorumu, sorun tanımı ve History çözümü
+docs/KULLANICI_SORUNU.md                   kullanıcı yorumu, sorun tanımı ve İşlem geçmişi çözümü
 AGENT.md                                   geliştirici/ajan kuralları
 ```

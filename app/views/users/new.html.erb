@@ -1,44 +1,71 @@
-<h1>New user</h1>
+<% content_for :title, "Yeni kullanıcı · DestekAkış" %>
 
-<%= form_with model: @user do |form| %>
-  <% if @user.errors.any? %>
-    <div class="errors">
-      <h2><%= pluralize(@user.errors.count, "error") %> prevented this user from being saved:</h2>
-      <ul>
-        <% @user.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
-        <% end %>
-      </ul>
+<header class="page-header">
+  <div class="page-heading">
+    <nav class="breadcrumb" aria-label="Konum">
+      <%= link_to "Kullanıcılar", users_path %><%= icon("chevron-right", size: 14) %><span aria-current="page">Yeni kullanıcı</span>
+    </nav>
+    <h1 class="page-title">Yeni kullanıcı</h1>
+    <p class="page-subtitle">Ekibe yeni bir destek temsilcisi veya yönetici ekle.</p>
+  </div>
+</header>
+
+<div class="narrow">
+  <%= form_with model: @user, class: "form card" do |form| %>
+    <% if @user.errors.any? %>
+      <div class="errors" role="alert">
+        <div class="errors-title"><%= icon("alert-circle") %><h2>Kullanıcı kaydedilemedi. Lütfen <%= @user.errors.count %> hatayı düzelt:</h2></div>
+        <ul>
+          <% @user.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <fieldset class="form-section">
+      <legend class="form-section-title">Hesap bilgileri</legend>
+
+      <div class="field-row">
+        <div class="field">
+          <%= form.label :name, "Ad soyad" %>
+          <%= form.text_field :name, required: true %>
+        </div>
+
+        <div class="field">
+          <%= form.label :email_address, "E-posta adresi" %>
+          <%= form.email_field :email_address, required: true, autocomplete: "off" %>
+        </div>
+      </div>
+
+      <div class="field">
+        <%= form.label :role, "Rol" %>
+        <%= form.select :role, User.roles.keys.map { |role| [ role_label(role), role ] } %>
+        <p class="field-hint">Yöneticiler kullanıcı oluşturabilir; destek temsilcileri yalnızca taleplerle çalışır.</p>
+      </div>
+    </fieldset>
+
+    <fieldset class="form-section">
+      <legend class="form-section-title">Parola</legend>
+
+      <div class="field-row">
+        <div class="field">
+          <%= form.label :password, "Parola" %>
+          <%= form.password_field :password, required: true, autocomplete: "new-password",
+                minlength: User::MINIMUM_PASSWORD_LENGTH, maxlength: 72, "aria-describedby": "password-hint" %>
+          <p class="field-hint" id="password-hint">En az <%= User::MINIMUM_PASSWORD_LENGTH %> karakter.</p>
+        </div>
+
+        <div class="field">
+          <%= form.label :password_confirmation, "Parola (tekrar)" %>
+          <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
+        </div>
+      </div>
+    </fieldset>
+
+    <div class="form-actions">
+      <%= link_to "Vazgeç", users_path, class: "button secondary" %>
+      <%= form.submit "Kullanıcıyı oluştur", class: "button", data: { turbo_submits_with: "Oluşturuluyor…" } %>
     </div>
   <% end %>
-
-  <p>
-    <%= form.label :name %><br>
-    <%= form.text_field :name, required: true %>
-  </p>
-
-  <p>
-    <%= form.label :email_address, "Email" %><br>
-    <%= form.email_field :email_address, required: true, autocomplete: "off" %>
-  </p>
-
-  <p>
-    <%= form.label :role %><br>
-    <%= form.select :role, User.roles.keys.map { |role| [ role.humanize, role ] } %>
-  </p>
-
-  <p>
-    <%= form.label :password %><br>
-    <%= form.password_field :password, required: true, autocomplete: "new-password",
-          minlength: User::MINIMUM_PASSWORD_LENGTH, maxlength: 72 %>
-  </p>
-
-  <p>
-    <%= form.label :password_confirmation %><br>
-    <%= form.password_field :password_confirmation, required: true, autocomplete: "new-password", maxlength: 72 %>
-  </p>
-
-  <%= form.submit "Create user" %>
-<% end %>
-
-<p><%= link_to "Back to users", users_path %></p>
+</div>

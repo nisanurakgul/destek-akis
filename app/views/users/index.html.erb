@@ -1,22 +1,34 @@
-<h1>Users</h1>
+<% content_for :title, "Kullanıcılar · DestekAkış" %>
 
-<p><%= link_to "New user", new_user_path %></p>
+<header class="page-header">
+  <div class="page-heading">
+    <h1 class="page-title">Kullanıcılar</h1>
+    <p class="page-subtitle">DestekAkış'a erişimi olan <%= @users.size %> ekip üyesi. Herkese açık kayıt yoktur; hesapları yöneticiler oluşturur.</p>
+  </div>
+  <div class="page-actions">
+    <%= link_to new_user_path, class: "button" do %><%= icon("user-plus") %>Yeni kullanıcı<% end %>
+  </div>
+</header>
 
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Email</th>
-      <th>Role</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% @users.each do |user| %>
-      <tr>
-        <td><%= user.name %></td>
-        <td><%= user.email_address %></td>
-        <td><%= user.role %></td>
-      </tr>
-    <% end %>
-  </tbody>
-</table>
+<div class="card card-flush">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th scope="col">Ad soyad</th>
+          <th scope="col">E-posta</th>
+          <th scope="col">Rol</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr id="<%= dom_id(user) %>">
+            <td><span class="person"><%= avatar(user.name, size: :sm) %><span class="person-name"><%= user.name %></span></span></td>
+            <td class="muted-cell"><%= user.email_address %></td>
+            <td><span class="badge role-<%= user.role %>"><%= role_label(user.role) %></span></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
